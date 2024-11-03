@@ -80,46 +80,66 @@ This will return the current status of the services defined in your Docker Compo
 
 ## Deployment
 
-You can deploy LiveCompose using the Docker image `askbe/livecompose`.
+You can deploy LiveCompose using the Docker image `askbe/livecompose`. Here’s how to run it using a Docker command:
 
-Here’s a sample docker command to start the application:
+### Using Docker Command
+
+Run the following command to start the LiveCompose service with autorestart:
 
 ```bash
 docker run -d \
   --name livecompose \
+  --restart unless-stopped \
   -e ASK_LiveCompose__BasePath=/projects \
   -e ASK_LiveCompose__Key=1234567890abcdefgh \  # Change this for production
-  -v /home/flynn/Docker:/projects \
+  -v /opt/compose-projects:/projects \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -p 9000:8080 \
   askbe/livecompose:0.0.3
 ```
 
-Here’s a sample `docker-compose.yml` file to get you started:
+### Explanation of the Command
+
+- `-d`: Run the container in detached mode.
+- `--name livecompose`: Name the container "livecompose".
+- `--restart unless-stopped`: Automatically restart the container unless it is explicitly stopped.
+- `-e`: Set environment variables for the container:
+  - `ASK_LiveCompose__BasePath`: The base path where the application looks for Docker Compose files (default: `/projects`).
+  - `ASK_LiveCompose__Key`: A specific key for security; change this for production.
+- `-v`: Bind mount volumes to share data between the host and the container:
+  - `/opt/compose-projects`: Host directory for your Docker projects.
+  - `/var/run/docker.sock`: Allows the container to communicate with the Docker daemon.
+- `-p`: Map port 9000 on the host to port 8080 on the container.
+- `askbe/livecompose:0.0.3`: Specify the Docker image to use.
+
+Make sure to adjust the values for the environment variables and the volume paths according to your setup.
+
+### Using Docker Compose (Optional)
+
+If you prefer to use Docker Compose, here’s a sample `docker-compose.yml` file with autorestart configured:
 
 ```yaml
 services:
   livecompose:
     image: askbe/livecompose:0.0.3
+    restart: unless-stopped
     environment:
       - ASK_LiveCompose__BasePath=/projects
       - ASK_LiveCompose__Key=1234567890abcdefgh  # Change this for production
     volumes:
-      - /home/flynn/Docker:/projects
+      - /opt/compose-projects:/projects
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - 9000:8080
 ```
 
-### Steps to Deploy
-
-1. Create a directory for your projects, e.g., `/home/flynn/Docker`.
-2. Create the `docker-compose.yml` file with the content above.
-3. Run the following command to start the LiveCompose service:
+To start the service using Docker Compose, run:
 
 ```bash
 docker-compose up -d
 ```
+
+This will achieve the same result as the direct Docker command.
 
 ## Example GitLab CI/CD Pipeline
 
