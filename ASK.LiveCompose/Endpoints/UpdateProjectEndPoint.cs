@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Ardalis.ApiEndpoints;
 using ASK.LiveCompose.Services;
 using Microsoft.AspNetCore.Http.Features;
@@ -5,13 +6,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ASK.LiveCompose.Endpoints;
 
-public class UpdateProjectsEndPointInput
+public class UpdateProjectsEndPointInput : IValidatableObject
 {
     [FromRoute(Name = "projectId")]
     public required string ProjectId { get; set; }
 
     [FromRoute(Name = "service")]
-    public string? Service { get; set; }
+    public string? ServiceName { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if(!Guid.TryParse(ProjectId, out _))
+            yield return new ValidationResult("Invalid Project Id");
+        if(ServiceName is not null && !ServiceName.IsValidateServiceName())
+            yield return new ValidationResult("Service name is invalid");
+    }
 }
 
 [Route("/projects")]
@@ -35,7 +44,7 @@ public class UpdateProjectsEndPoint(IDockerComposeService dockerComposeService) 
         await g.StartAsync(cancellationToken);
         await dockerComposeService.UpdateProjectAsync(
             request.ProjectId,
-            request.Service,
+            request.ServiceName,
             environmentVariables,
             x =>
             {
