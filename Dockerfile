@@ -11,6 +11,14 @@ RUN dotnet publish -c Release -o out
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 
+LABEL org.opencontainers.image.title="ASK.LiveCompose" \
+      org.opencontainers.image.description="ASK.LiveCompose is a lightweight API that allows you to update your Docker Compose services via webhooks." \
+      org.opencontainers.image.authors="vincent@ask.be" \
+      org.opencontainers.image.url="https://github.com/ask-be/ask.livecompose" \
+      org.opencontainers.image.source="https://github.com/ask-be/ask.livecompose" \
+      org.opencontainers.image.licenses="GPL-3.0-or-later" \
+      org.opencontainers.image.vendor="ASK"
+
 # Install latest version of Docker & Docker compose
 RUN apt-get update && \
     apt-get install -y ca-certificates curl && \
@@ -23,9 +31,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-
-
 WORKDIR /App
 COPY --from=build-env /App/out .
 
-ENTRYPOINT ["dotnet", "ASK.DockerCompose.RestApi.dll"]
+ENTRYPOINT ["dotnet", "ASK.LiveCompose.dll"]

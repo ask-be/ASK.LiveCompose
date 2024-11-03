@@ -7,9 +7,7 @@
       "launchBrowser": false,
       "applicationUrl": "http://localhost:5162",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASK_LiveCompose__BasePath": "/home/flynn/Docker/nginx",
-        "ASK_LiveCompose__Key":"123456456789"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

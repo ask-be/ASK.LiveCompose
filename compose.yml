@@ -1,11 +1,11 @@
 
 
 services:
-   composeapi:
-     image: testcompose
+   livecompose:
+     image: askbe/livecompose:0.0.3
      environment:
-      - ASK_DockerComposeService__BasePath=/projects
-      - ASK_DockerComposeService__Key=123456456789
+      - ASK_LiveCompose__BasePath=/projects
+      - ASK_LiveCompose__Key=123456456789
      volumes:
       - /home/flynn/Docker:/projects
       - /var/run/docker.sock:/var/run/docker.sock

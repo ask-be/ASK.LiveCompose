@@ -1,4 +1,5 @@
 using ASK.LiveCompose.Services;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,11 @@ builder.Services.AddSingleton<IDockerComposeService, DockerComposeService>();
 
 var app = builder.Build();
 
-app.Services.GetRequiredService<IDockerComposeService>();
+var dockerComposeService = app.Services.GetRequiredService<IDockerComposeService>();
+foreach (var project in dockerComposeService.Projects)
+{
+    Console.WriteLine($"{project.Value} => {project.Key}");
+}
 
 app.UseHttpsRedirection();
 

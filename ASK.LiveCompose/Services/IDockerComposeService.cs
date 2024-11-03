@@ -1,3 +1,5 @@
+using System.Collections;
+
 namespace ASK.LiveCompose.Services;
 
 public interface IDockerComposeService
@@ -18,4 +20,5 @@ public interface IDockerComposeService
         CancellationToken cancellationToken);
 
     Task<string> GetProjectAsync(string projectKey, CancellationToken cancellationToken);
+    IReadOnlyDictionary<string,string> Projects { get; }
 }

@@ -7,7 +7,7 @@ namespace ASK.LiveCompose.Services;
 
 public class DockerComposeServiceConfig
 {
-    public required string BasePath { get; init; }
+    public required string BasePath { get; set; }
     public required string Key { get; set; }
 }
 
@@ -16,7 +16,9 @@ public class DockerComposeService : IDockerComposeService
     private const string DockerApplicationName = "docker";
     private readonly ILogger<DockerComposeService> _logger;
     private readonly DockerComposeServiceConfig _config;
-    private readonly Dictionary<Guid, string> _projects = new();
+    private readonly Dictionary<string, string> _projects = new();
+
+    public IReadOnlyDictionary<string,string> Projects => _projects;
 
     public DockerComposeService(ILogger<DockerComposeService> logger, IOptions<DockerComposeServiceConfig> config)
     {
@@ -29,13 +31,24 @@ public class DockerComposeService : IDockerComposeService
             _config.Key = "1234567890abcdefgh";
         }
 
+        if (string.IsNullOrEmpty(_config.BasePath))
+        {
+            _logger.LogInformation("Using default Base path : /projects");
+            _config.BasePath = "/projects";
+        }
+
         _logger.LogInformation("Loading projects from {Directory}",config.Value.BasePath);
 
-        foreach (var projectPath in Directory.GetDirectories(_config.BasePath))
+        if (!Directory.Exists(config.Value.BasePath))
         {
-            var key = ComputeProjectKey(projectPath);
-            _logger.LogInformation("{ProjectPath} : {ProjectKey}", Path.GetFileName(projectPath),key);
-            _projects.Add(ComputeProjectKey(projectPath),projectPath);
+            _logger.LogError("Directory {Directory} does not exist", config.Value.BasePath);
+        }
+        else
+        {
+            foreach (var projectPath in Directory.GetDirectories(_config.BasePath).OrderBy(x => x))
+            {
+                _projects.Add(ComputeProjectKey(projectPath),projectPath);
+            }
         }
     }
 
@@ -213,16 +226,14 @@ public class DockerComposeService : IDockerComposeService
         _logger.LogInformation("Docker Command Terminated");
     }
 
-    private Guid ComputeProjectKey(string projectPath)
+    private string ComputeProjectKey(string projectPath)
     {
-        return new Guid(MD5.HashData(Encoding.UTF8.GetBytes(_config.Key + ":" + projectPath)));
+        return new Guid(MD5.HashData(Encoding.UTF8.GetBytes(_config.Key + ":" + projectPath))).ToString("N");
     }
 
     private string GetProjectPath(string projectKey)
     {
-        var key = Guid.Parse(projectKey);
-
-        if (!_projects.TryGetValue(key, out var projectPath))
+        if (!_projects.TryGetValue(projectKey, out var projectPath))
         {
             throw new ApplicationException($"Project {projectKey} not found");
         }
