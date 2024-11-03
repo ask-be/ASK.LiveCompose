@@ -43,6 +43,12 @@ To retrieve all service logs, use:
 GET https://yourdomain.com/projects/{project_id}/logs
 ```
 
+The following query string parameters can be specified while requesting logs
+
+- ```t=true``` : Boolean value, Add timestamp before each line (default false)
+- ```n=xxx```: Number of lines to show from the end of the logs for each container or "All" for everything (default All)
+- ```since=xxx```: Show logs since timestamp (e.g. 2013-01-02T13:23:37Z) or relative (e.g. 42m for 42 minutes)
+
 ### Get Docker Compose Status
 
 To get the output of `docker-compose ps` for a project, simply use:
