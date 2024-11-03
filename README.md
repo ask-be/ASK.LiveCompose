@@ -4,13 +4,11 @@ LiveCompose is a lightweight API that allows you to update your Docker Compose s
 
 ## Features
 
-- Update all services in a Docker Compose file with a single API call.
-- Update a specific service or retrieve logs for that service.
-- Update environment variables in the `.env` file via query strings.
-- Validate deployment status with Docker Compose commands.
-- Access service logs in real-time.
-- Unique ID generation for each project based on a consistent configuration key.
-- Displays project IDs at startup for easy reference.
+- Update all or specific services in a Docker Compose file via API calls.
+- Modify environment variables in the `.env` file using query strings.
+- Access real-time service logs.
+- Retrieve docker compose services status
+- Unique project ID generation for easy management.
 
 ## Configuration
 
