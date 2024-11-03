@@ -80,7 +80,22 @@ This will return the current status of the services defined in your Docker Compo
 
 ## Deployment
 
-You can deploy LiveCompose using the Docker image `askbe/livecompose`. Here’s a sample `docker-compose.yml` file to get you started:
+You can deploy LiveCompose using the Docker image `askbe/livecompose`.
+
+Here’s a sample docker command to start the application:
+
+```bash
+docker run -d \
+  --name livecompose \
+  -e ASK_LiveCompose__BasePath=/projects \
+  -e ASK_LiveCompose__Key=1234567890abcdefgh \  # Change this for production
+  -v /home/flynn/Docker:/projects \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -p 9000:8080 \
+  askbe/livecompose:0.0.3
+```
+
+Here’s a sample `docker-compose.yml` file to get you started:
 
 ```yaml
 services:
