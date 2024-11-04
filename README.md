@@ -13,6 +13,20 @@ LiveCompose is a lightweight API that allows you to update your Docker Compose s
 
 **All API calls must be made over HTTPS to ensure security.** It is essential to set up a reverse proxy (such as Nginx or Traefik) for SSL termination before deploying LiveCompose. **Additionally, implement IP restrictions in your reverse proxy configuration to control access to the API and enhance security.** Direct HTTP calls should be avoided to protect sensitive data.
 
+## Project unique ids
+
+At startup each project is assigned an id built using the ```ASK_LiveCompose__Key``` environment variable (see below). All these projects id are displayed in console at application startup. 
+```
+...
+/projects/baseline => 7e8817df4c33a322a5926b6279267303
+/projects/bevault => 3bf5d06d3dd10c7631aef07371d9d64d
+/projects/bookstack => 0a7910c601b98d71168753cac15700ce
+/projects/cloudbeaver => f3832c6d95cc3530b57956c6ecf7dfca
+...
+```
+These ids act as a project secrets. Knowing the project id allow to perform changes and read logs on the project. They should therefore remain as secret as possible.
+If there is a need to generate new ids, simply update the ```ASK_LiveCompose__Key``` environment variable and restart the application.
+
 ## API Endpoints
 
 ### Update Services
