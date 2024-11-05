@@ -20,7 +20,7 @@ public class DockerComposeService : IDockerComposeService
         var line = $"|{new string('-', maxLength + 1)}|{new string('-', 34)}|";
         Console.WriteLine();
         Console.WriteLine(line);
-        Console.WriteLine(format, " Project Name", "Project Auth Token");
+        Console.WriteLine(format, "Project Name", "Project Auth Token");
         Console.WriteLine(line);
         foreach (var project in _projects)
         {
