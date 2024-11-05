@@ -8,6 +8,7 @@ LiveCompose is a lightweight API that allows you to update your Docker Compose s
 - Modify environment variables in the `.env` file using query strings.
 - Access real-time service logs.
 - Unique project ID generation for easy management.
+- Integrated Rate Limiting 
 
 ### Important Security Note
 
@@ -84,7 +85,7 @@ When deploying a reverse proxy, ensure you configure it to allow traffic only fr
 
 ### Using Docker Command
 
-Run the following command to start the LiveCompose service with autorestart:
+Run the following command to start the LiveCompose service:
 
 ```bash
 docker run -d \
@@ -100,7 +101,7 @@ docker run -d \
 
 ### Using Docker Compose (Optional)
 
-If you prefer to use Docker Compose, here’s a sample `docker-compose.yml` file with autorestart configured:
+If you prefer to use Docker Compose, here’s a sample `docker-compose.yml` file:
 
 ```yaml
 services:
@@ -124,6 +125,14 @@ docker-compose up -d
 ```
 
 This will achieve the same result as the direct Docker command.
+
+## Rate Limiting
+
+Rate limiting is enabled on the api by default and can be customized using the following environment variables (default limit is 5req/sec):
+- **ASK_LiveCompose__EnableRateLimit**: Boolean, Enable to Disable Rate Limiting (default : true)
+- **ASK_LiveCompose__RateLimit**: Number of request allowed by Window (default :5)
+- **ASK_LiveCompose__RateDelaySecond**: Window Delay Seconds (default :1)
+- **ASK_LiveCompose__RateLimitQueueSize** : Number of requests put in queue before dropping requests (default: 0)
 
 ## Example Usage
 

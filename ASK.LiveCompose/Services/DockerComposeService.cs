@@ -1,21 +1,16 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
+using ASK.LiveCompose.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace ASK.LiveCompose.Services;
-
-public class DockerComposeServiceConfig
-{
-    public required string BasePath { get; set; }
-    public required string Key { get; set; }
-}
 
 public class DockerComposeService : IDockerComposeService
 {
     private const string DockerApplicationName = "docker";
     private readonly ILogger<DockerComposeService> _logger;
-    private readonly DockerComposeServiceConfig _config;
+    private readonly LiveComposeConfig _config;
     private readonly Dictionary<string, string> _projects = new();
 
     public void PrintProjectTokens()
@@ -45,7 +40,7 @@ public class DockerComposeService : IDockerComposeService
         return null;
     }
 
-    public DockerComposeService(ILogger<DockerComposeService> logger, IOptions<DockerComposeServiceConfig> config)
+    public DockerComposeService(ILogger<DockerComposeService> logger, IOptions<LiveComposeConfig> config)
     {
         _logger = logger;
         _config = config.Value;
