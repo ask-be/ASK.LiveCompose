@@ -1,5 +1,5 @@
+using ASK.LiveCompose.Middlewares;
 using ASK.LiveCompose.Services;
-using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,14 +19,15 @@ builder.Services.Configure<DockerComposeServiceConfig>(builder.Configuration.Get
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSingleton<IDockerComposeService, DockerComposeService>();
+builder.Services.AddTransient<AuthMiddleware>();
 
 var app = builder.Build();
 
-var dockerComposeService = app.Services.GetRequiredService<IDockerComposeService>();
-foreach (var project in dockerComposeService.Projects)
-{
-    Console.WriteLine($"{project.Value} => {project.Key}");
-}
+app.Services.GetRequiredService<IDockerComposeService>().PrintProjectTokens();
+
+app.UseForwardedHeaders();
+
+app.UseMiddleware<AuthMiddleware>();
 
 app.UseHttpsRedirection();
 

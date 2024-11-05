@@ -8,17 +8,17 @@ namespace ASK.LiveCompose.Endpoints;
 
 public class UpdateProjectsEndPointInput : IValidatableObject
 {
-    [FromRoute(Name = "projectId")]
-    public required string ProjectId { get; set; }
+    [FromRoute(Name = "projectName")]
+    public required string ProjectName { get; set; }
 
     [FromRoute(Name = "service")]
     public string? ServiceName { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if(!Guid.TryParse(ProjectId, out _))
+        if(!ProjectName.IsValidateServiceOrProjectName())
             yield return new ValidationResult("Invalid Project Id");
-        if(ServiceName is not null && !ServiceName.IsValidateServiceName())
+        if(ServiceName is not null && !ServiceName.IsValidateServiceOrProjectName())
             yield return new ValidationResult("Service name is invalid");
     }
 }
@@ -26,8 +26,8 @@ public class UpdateProjectsEndPointInput : IValidatableObject
 [Route("/projects")]
 public class UpdateProjectsEndPoint(IDockerComposeService dockerComposeService) : EndpointBaseAsync.WithRequest<UpdateProjectsEndPointInput>.WithoutResult
 {
-    [HttpPost("{projectId}/update")]
-    [HttpPost("{projectId}/services/{service}/update")]
+    [HttpPost("{projectName}/update")]
+    [HttpPost("{projectName}/services/{service}/update")]
     public override async Task HandleAsync(UpdateProjectsEndPointInput request, CancellationToken cancellationToken = new CancellationToken())
     {
         var g = HttpContext.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
@@ -43,7 +43,7 @@ public class UpdateProjectsEndPoint(IDockerComposeService dockerComposeService) 
 
         await g.StartAsync(cancellationToken);
         await dockerComposeService.UpdateProjectAsync(
-            request.ProjectId,
+            request.ProjectName,
             request.ServiceName,
             environmentVariables,
             x =>

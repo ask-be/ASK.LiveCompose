@@ -18,7 +18,32 @@ public class DockerComposeService : IDockerComposeService
     private readonly DockerComposeServiceConfig _config;
     private readonly Dictionary<string, string> _projects = new();
 
-    public IReadOnlyDictionary<string,string> Projects => _projects;
+    public void PrintProjectTokens()
+    {
+        var maxLength = _projects.Max(x => x.Key.Length) + 1;
+        var format = $"| {{0,-{maxLength}}}| {{1, -33}}|";
+        var line = $"|{new string('-', maxLength + 1)}|{new string('-', 34)}|";
+        Console.WriteLine();
+        Console.WriteLine(line);
+        Console.WriteLine(format, " Project Name", "Project Auth Token");
+        Console.WriteLine(line);
+        foreach (var project in _projects)
+        {
+            Console.WriteLine(format, project.Key, project.Value);
+        }
+        Console.WriteLine(line);
+        Console.WriteLine();
+    }
+
+    public string? GetProjectToken(string projectName)
+    {
+        if (_projects.TryGetValue(projectName, out var token))
+        {
+            return token;
+        }
+        _logger.LogWarning("Project {ProjectName} not found", projectName);
+        return null;
+    }
 
     public DockerComposeService(ILogger<DockerComposeService> logger, IOptions<DockerComposeServiceConfig> config)
     {
@@ -45,27 +70,30 @@ public class DockerComposeService : IDockerComposeService
         }
         else
         {
-            foreach (var projectPath in Directory.GetDirectories(_config.BasePath).OrderBy(x => x))
+            foreach (var projectName in Directory
+                                        .GetDirectories(_config.BasePath)
+                                        .Select(x => Path.GetFileName(x) ?? throw new UnreachableException())
+                                        .OrderBy(x => x))
             {
-                _projects.Add(ComputeProjectKey(projectPath),projectPath);
+                _projects.Add(projectName, ComputeProjectKey(projectName));
             }
         }
     }
 
-    public async Task UpdateProjectAsync(string projectKey,
+    public async Task UpdateProjectAsync(string projectName,
         string? service,
         IReadOnlyDictionary<string,string> environmentVariables,
         Action<string> writeLogLine,
         CancellationToken cancellationToken)
     {
-        var projectPath = GetProjectPath(projectKey);
+        var projectPath = GetProjectPath(projectName);
         await UpdateEnvironmentVariables(projectPath, environmentVariables);
         await DockerComposePullAsync(projectPath, service, writeLogLine, cancellationToken);
         await DockerComposeUpAsync(projectPath, service, writeLogLine, cancellationToken);
     }
 
     public async Task GetProjectServiceLogs(
-        string projectKey,
+        string projectName,
         string? serviceName,
         bool includeTimeStamp,
         string? tail,
@@ -73,9 +101,9 @@ public class DockerComposeService : IDockerComposeService
         Action<string> writeLogLine,
         CancellationToken cancellationToken)
     {
-        var projectPath = GetProjectPath(projectKey);
+        var projectPath = GetProjectPath(projectName);
 
-        var parameters = new StringBuilder("compose logs -f --no-color --no-log-prefix");
+        var parameters = new StringBuilder("compose logs -f");
         if (includeTimeStamp)
         {
             parameters.Append(" -t");
@@ -99,9 +127,9 @@ public class DockerComposeService : IDockerComposeService
         await ExecuteDockerComposeCommandAsync(projectPath, DockerApplicationName, parameters.ToString(), writeLogLine, cancellationToken);
     }
 
-    public async Task<string> GetProjectAsync(string projectKey, CancellationToken cancellationToken)
+    public async Task<string> GetProjectAsync(string projectName, CancellationToken cancellationToken)
     {
-        var projectPath = GetProjectPath(projectKey);
+        var projectPath = GetProjectPath(projectName);
         return await DockerComposePsAsync(projectPath);
     }
 
@@ -226,18 +254,18 @@ public class DockerComposeService : IDockerComposeService
         _logger.LogInformation("Docker Command Terminated");
     }
 
-    private string ComputeProjectKey(string projectPath)
+    private string ComputeProjectKey(string projectName)
     {
-        return new Guid(MD5.HashData(Encoding.UTF8.GetBytes(_config.Key + ":" + projectPath))).ToString("N");
+        return new Guid(MD5.HashData(Encoding.UTF8.GetBytes(_config.Key + ":" + projectName))).ToString("N");
     }
 
-    private string GetProjectPath(string projectKey)
+    private string GetProjectPath(string projectName)
     {
-        if (!_projects.TryGetValue(projectKey, out var projectPath))
+        if (!_projects.TryGetValue(projectName, out _))
         {
-            throw new ApplicationException($"Project {projectKey} not found");
+            throw new ApplicationException($"Project {projectName} not found");
         }
 
-        return projectPath;
+        return Path.Combine(_config.BasePath, projectName);
     }
 }

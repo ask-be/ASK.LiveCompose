@@ -8,8 +8,8 @@ namespace ASK.LiveCompose.Endpoints;
 
 public class GetProjectLogsEndPointInput : IValidatableObject
 {
-    [FromRoute(Name = "projectId")]
-    public required string ProjectId { get; set; }
+    [FromRoute(Name = "projectName")]
+    public required string ProjectName { get; set; }
 
     [FromRoute(Name = "serviceName")]
     public string? ServiceName { get; set; }
@@ -25,12 +25,12 @@ public class GetProjectLogsEndPointInput : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if(!Guid.TryParse(ProjectId, out _))
+        if(!ProjectName.IsValidateServiceOrProjectName())
             yield return new ValidationResult("Invalid Project Id");
-        if(ServiceName is not null && !ServiceName.IsValidateServiceName())
+        if(ServiceName is not null && !ServiceName.IsValidateServiceOrProjectName())
             yield return new ValidationResult("Service name is invalid");
         if(Tail is not null && !Tail.Equals("ALL", StringComparison.CurrentCultureIgnoreCase) && !int.TryParse(Tail, out _))
-            yield return new ValidationResult("Tail is invalid, must be a number or All");
+            yield return new ValidationResult("Tail is invalid, must be a number or 'All'");
         if(Since is not null && !Since.IsValidSinceValue())
             yield return new ValidationResult("Since is invalid");
     }
@@ -39,8 +39,8 @@ public class GetProjectLogsEndPointInput : IValidatableObject
 [Route("/projects")]
 public class GetProjectLogsEndPoint(IDockerComposeService dockerComposeService) : EndpointBaseAsync.WithRequest<GetProjectLogsEndPointInput>.WithoutResult
 {
-    [HttpGet("{projectId}/logs")]
-    [HttpGet("{projectId}/services/{serviceName}/logs")]
+    [HttpGet("{projectName}/logs")]
+    [HttpGet("{projectName}/services/{serviceName}/logs")]
     public override async Task HandleAsync(GetProjectLogsEndPointInput request, CancellationToken cancellationToken = new CancellationToken())
     {
         var g = HttpContext.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
@@ -50,7 +50,7 @@ public class GetProjectLogsEndPoint(IDockerComposeService dockerComposeService) 
 
         await g.StartAsync(cancellationToken);
         await dockerComposeService.GetProjectServiceLogs(
-            request.ProjectId,
+            request.ProjectName,
             request.ServiceName,
             request.IncludeTimStamp,
             request.Tail,

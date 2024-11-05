@@ -11,36 +11,39 @@ LiveCompose is a lightweight API that allows you to update your Docker Compose s
 
 ### Important Security Note
 
-**All API calls must be made over HTTPS to ensure security.** It is essential to set up a reverse proxy (such as Nginx or Traefik) for SSL termination before deploying LiveCompose. **Additionally, implement IP restrictions in your reverse proxy configuration to control access to the API and enhance security.** Direct HTTP calls should be avoided to protect sensitive data.
+**All API calls must be made over HTTPS to ensure security.** It is essential to set up a reverse proxy (such as Nginx or Traefik) for SSL termination before deploying LiveCompose.
+**Additionally, implement IP restrictions in your reverse proxy configuration to control access to the API and enhance security.** Direct HTTP calls should be avoided to protect sensitive data.
 
-## Project unique ids
+## Project Auth-Tokens and Authentication
 
-At startup each project is assigned an id built using the ```ASK_LiveCompose__Key``` environment variable (see below). All these projects id are displayed in console at application startup. 
+At startup each project is assigned an Auth-Token built using the ```ASK_LiveCompose__Key``` environment variable (see below). All the projects Auth-Tokens are displayed in console at application startup. 
 ```
-...
-/projects/baseline => 7e8817df4c33a322a5926b6279267303
-/projects/bevault => 3bf5d06d3dd10c7631aef07371d9d64d
-/projects/bookstack => 0a7910c601b98d71168753cac15700ce
-/projects/cloudbeaver => f3832c6d95cc3530b57956c6ecf7dfca
-...
+|--------------------------|----------------------------------|
+|  Project Name            | Project Auth Token               |
+|--------------------------|----------------------------------|
+| baseline                 | 12345678901234567890123456789011 |
+| bevault                  | azertyuiopqsdfghjklmmmwxcvbnazzz |
+| bookstack                | bz1234uiopqsdfghjklmm2345332azzz |
+| cloudbeaver              | 9dab7bb5f4af64ae8f095f112342a844 |
+|--------------------------|----------------------------------|
 ```
-These ids act as a project secrets. Knowing the project id allow to perform changes and read logs on the project. They should therefore remain as secret as possible.
-If there is a need to generate new ids, simply update the ```ASK_LiveCompose__Key``` environment variable and restart the application.
+The Auth-Token of the project must be sent as using the ```X-Auth-token``` HTTP Header.
+If there is a need to generate new Auth-Tokens, simply update the ```ASK_LiveCompose__Key``` environment variable and restart the application.
 
 ## API Endpoints
 
 ### Update Services
 
-To update all services or a specific service, use the following endpoints (replace `http://` with `https://`):
+To update all services or a specific service, use the following endpoints:
 
 - **Update all services**:
     ```
-    POST https://yourdomain.com/projects/{project_id}/update
+    POST https://yourdomain.com/projects/{project_name}/update
     ```
 
 - **Update a specific service**:
     ```
-    POST https://yourdomain.com/projects/{project_id}/services/{service_name}/update
+    POST https://yourdomain.com/projects/{project_name}/services/{service_name}/update
     ```
 
 ### Get Service Logs
@@ -48,13 +51,13 @@ To update all services or a specific service, use the following endpoints (repla
 To retrieve logs for a specific service, use:
 
 ```
-GET https://yourdomain.com/projects/{project_id}/services/{service_name}/logs
+GET https://yourdomain.com/projects/{project_name}/services/{service_name}/logs
 ```
 
 To retrieve all service logs, use:
 
 ```
-GET https://yourdomain.com/projects/{project_id}/logs
+GET https://yourdomain.com/projects/{project_name}/logs
 ```
 
 The following query string parameters can be specified while requesting logs
@@ -68,7 +71,7 @@ The following query string parameters can be specified while requesting logs
 To get the output of `docker-compose ps` for a project, simply use:
 
 ```
-GET https://yourdomain.com/projects/{project_id}/
+GET https://yourdomain.com/projects/{project_name}/
 ```
 
 ## Deployment
@@ -129,31 +132,39 @@ Here’s how you can use `curl` to update your services, retrieve logs, and chec
 1. **Update Services** with environment variables:
 
 ```bash
-curl -X POST "https://yourdomain.com/projects/0a7910c601b98d71168753cac15700ce/update?ENV_VAR1=value1&ENV_VAR2=value2"
+curl -X POST \
+     -H X-Auth-Token:701b0bbeb927cbeb41435c1b5dc39d57\
+     "https://yourdomain.com/projects/reverse_proxy/update?ENV_VAR1=value1&ENV_VAR2=value2"
 ```
 
 2. **Update a Specific Service**:
 
 ```bash
-curl -X POST "https://yourdomain.com/projects/0a7910c601b98d71168753cac15700ce/services/service_name/update"
+curl -X POST \
+     -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
+     "https://yourdomain.com/projects/bookstack/services/app/update"
 ```
 
 3. **View Logs for a Specific Service**:
 
 ```bash
-curl --max-time 10 "https://yourdomain.com/projects/0a7910c601b98d71168753cac15700ce/services/service_name/logs"
+curl --max-time 10 \
+     -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
+     "https://yourdomain.com/projects/bookstack/services/app/logs"
 ```
 
 4. **View All Logs**:
 
 ```bash
-curl --max-time 10 "https://yourdomain.com/projects/0a7910c601b98d71168753cac15700ce/logs"
+curl --max-time 10 \
+     -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
+     "https://yourdomain.com/projects/bookstack/logs"
 ```
 
 5. **Check Docker Compose Status**:
 
 ```bash
-curl "https://yourdomain.com/projects/0a7910c601b98d71168753cac15700ce/"
+curl -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345 "https://yourdomain.com/projects/bookstack/"
 ```
 
 ## Contributing

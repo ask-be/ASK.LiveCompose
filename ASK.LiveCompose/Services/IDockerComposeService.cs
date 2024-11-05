@@ -4,14 +4,15 @@ namespace ASK.LiveCompose.Services;
 
 public interface IDockerComposeService
 {
-    Task UpdateProjectAsync(string projectKey,
+    Task UpdateProjectAsync(
+        string projectName,
         string? service,
         IReadOnlyDictionary<string,string> environmentVariables,
         Action<string> writeLogLine,
         CancellationToken cancellationToken);
 
     Task GetProjectServiceLogs(
-        string projectKey,
+        string projectName,
         string? serviceName,
         bool includeTimeStamp,
         string? tail,
@@ -19,6 +20,9 @@ public interface IDockerComposeService
         Action<string> writeLogLine,
         CancellationToken cancellationToken);
 
-    Task<string> GetProjectAsync(string projectKey, CancellationToken cancellationToken);
-    IReadOnlyDictionary<string,string> Projects { get; }
+    Task<string> GetProjectAsync(string projectName, CancellationToken cancellationToken);
+
+    void PrintProjectTokens();
+
+    string? GetProjectToken(string projectName);
 }
