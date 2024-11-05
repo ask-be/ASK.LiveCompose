@@ -23,7 +23,7 @@ LiveCompose is a lightweight API that allows you to update your Docker Compose s
 At startup each project is assigned an Auth-Token built using the ```ASK_LiveCompose__Key``` environment variable (see below). All the projects Auth-Tokens are displayed in console at application startup. 
 ```
 |--------------------------|----------------------------------|
-| Project Name            | Project Auth Token               |
+| Project Name             | Project Auth Token               |
 |--------------------------|----------------------------------|
 | baseline                 | 12345678901234567890123456789011 |
 | bevault                  | azertyuiopqsdfghjklmmmwxcvbnazzz |
