@@ -1,3 +1,6 @@
+![GitHub Release](https://img.shields.io/github/v/tag/ask-be/ASK.LiveCompose)
+![Docker Image Version](https://img.shields.io/docker/v/askbe/livecompose)
+
 # LiveCompose
 
 LiveCompose is a lightweight API that allows you to update your Docker Compose services via webhooks. It simplifies the deployment process by enabling you to pull updates and run your services with minimal effort, making it ideal for continuous integration workflows.
