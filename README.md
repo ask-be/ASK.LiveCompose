@@ -160,17 +160,16 @@ curl -X POST \
 3. **View Logs for a Specific Service**:
 
 ```bash
-curl --max-time 10 \
-     -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
+curl -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
      "https://yourdomain.com/projects/bookstack/services/app/logs"
 ```
 
-4. **View All Logs**:
+4. **View Logs for project since 15 seconds and stop after 10 seconds**:
 
 ```bash
 curl --max-time 10 \
      -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
-     "https://yourdomain.com/projects/bookstack/logs"
+     "https://yourdomain.com/projects/bookstack/logs?since=15s"
 ```
 
 5. **Check Docker Compose Status**:
