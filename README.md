@@ -13,10 +13,9 @@ LiveCompose is a lightweight API that allows you to update your Docker Compose s
 - Unique project ID generation for easy management.
 - Integrated Rate Limiting 
 
-### Important Security Note
-
-**All API calls must be made over HTTPS to ensure security.** It is essential to set up a reverse proxy (such as Nginx or Traefik) for SSL termination before deploying LiveCompose.
-**Additionally, implement IP restrictions in your reverse proxy configuration to control access to the API and enhance security.** Direct HTTP calls should be avoided to protect sensitive data.
+> [!WARNING]
+> **All API calls must be made over HTTPS to ensure security.** It is essential to set up a reverse proxy (such as Nginx or Traefik) for SSL termination before deploying LiveCompose.
+> **Additionally, implement IP restrictions in your reverse proxy configuration to control access to the API and enhance security.** Direct HTTP calls should be avoided to protect sensitive data.
 
 ## Project Auth-Tokens and Authentication
 
@@ -175,7 +174,7 @@ curl --max-time 10 \
 5. **Check Docker Compose Status**:
 
 ```bash
-curl -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345 "https://yourdomain.com/projects/bookstack/"
+curl -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345 "https://yourdomain.com/projects/bookstack"
 ```
 
 ## Contributing
@@ -184,4 +183,4 @@ Contributions are welcome! Please submit a pull request or open an issue to disc
 
 ## License
 
-This project is licensed under the LGPL-3.0 License or later. See the LICENSE file for details.
+This project is licensed under the GPL-3.0 License or later. See the LICENSE file for details.
