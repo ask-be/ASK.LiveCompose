@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024 Vincent DARON <vincent@ask.be>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /App
 

@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Vincent DARON <vincent@ask.be>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 namespace ASK.LiveCompose.Configuration;
 
 public class LiveComposeConfig

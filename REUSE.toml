@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: 2024 Vincent DARON <vincent@ask.be>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+version = 1
+
+[[annotations]]
+path = "ASK.LiveCompose.sln"
+SPDX-FileCopyrightText = "2024 Vincent DARON <vincent@ask.be>"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "ASK.LiveCompose/appsettings.json"
+SPDX-FileCopyrightText = "2024 Vincent DARON <vincent@ask.be>"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "ASK.LiveCompose/Properties/launchSettings.json"
+SPDX-FileCopyrightText = "2024 Vincent DARON <vincent@ask.be>"
+SPDX-License-Identifier = "GPL-3.0-or-later"

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Vincent DARON <vincent@ask.be>
+
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 ![GitHub Release](https://img.shields.io/github/v/tag/ask-be/ASK.LiveCompose)
 ![Docker Image Version](https://img.shields.io/docker/v/askbe/livecompose)
 
@@ -183,4 +189,4 @@ Contributions are welcome! Please submit a pull request or open an issue to disc
 
 ## License
 
-This project is licensed under the GPL-3.0 License or later. See the LICENSE file for details.
+This project is licensed under the GPL-3.0-or-later License or later. See the LICENSES folder for details.
