@@ -267,6 +267,6 @@ public class DockerComposeService : IDockerComposeService
             throw new ApplicationException($"Project {projectName} not found");
         }
 
-        return Path.Combine(_config.BasePath, projectName);
+        return Path.Combine(_config.BasePath!, projectName);
     }
 }

@@ -24,6 +24,6 @@ public static partial class StringExtensions
     [GeneratedRegex(@"\d+\w")]
     private static partial Regex RelativeTime();
 
-    [GeneratedRegex(@"^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$")]
+    [GeneratedRegex(@"^[a-zA-Z]([-_a-zA-Z0-9]*[_a-zA-Z0-9])?$")]
     private static partial Regex ValidateServiceOrProjectName();
 }
