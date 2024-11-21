@@ -144,32 +144,50 @@ Rate limiting is enabled on the api by default and can be customized using the f
 
 ## Example Usage
 
-Here’s how you can use `curl` to update your services, retrieve logs, and check status. Remember to use `https://` for all API calls.
+Here’s how you can use `curl` to update your services, retrieve logs, and check status.
 
-1. **Update Services** with environment variables:
+1. **Docker compose up** a project while updating environment variables:
 
 ```bash
 curl -X POST \
      -H X-Auth-Token:701b0bbeb927cbeb41435c1b5dc39d57\
-     "https://yourdomain.com/projects/reverse_proxy/update?ENV_VAR1=value1&ENV_VAR2=value2"
+     "https://yourdomain.com/projects/reverse_proxy/up?ENV_VAR1=value1&ENV_VAR2=value2"
+```
+> [!NOTE]
+> Environment variable must be prefixed by "ENV_" in the query string parameters.
+
+2. **Docker compose down** a project:
+
+```bash
+curl -X POST \
+     -H X-Auth-Token:701b0bbeb927cbeb41435c1b5dc39d57\
+     "https://yourdomain.com/projects/reverse_proxy/down"
 ```
 
-2. **Update a Specific Service**:
+3. **Pull a specific Service of a project**:
 
 ```bash
 curl -X POST \
      -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
-     "https://yourdomain.com/projects/bookstack/services/app/update"
+     "https://yourdomain.com/projects/bookstack/services/app/pull"
 ```
 
-3. **View Logs for a Specific Service**:
+4. **Pull a complete project**:
+
+```bash
+curl -X POST \
+     -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
+     "https://yourdomain.com/projects/bookstack/pull"
+```
+
+5. **View Logs for a Specific Service**:
 
 ```bash
 curl -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
      "https://yourdomain.com/projects/bookstack/services/app/logs"
 ```
 
-4. **View Logs for project since 15 seconds and stop after 10 seconds**:
+6. **View Logs for project since 15 seconds and stop after 10 seconds**:
 
 ```bash
 curl --max-time 10 \
@@ -177,7 +195,7 @@ curl --max-time 10 \
      "https://yourdomain.com/projects/bookstack/logs?since=15s"
 ```
 
-5. **Check Docker Compose Status**:
+7. **Check Docker Compose Status**:
 
 ```bash
 curl -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345 "https://yourdomain.com/projects/bookstack"
