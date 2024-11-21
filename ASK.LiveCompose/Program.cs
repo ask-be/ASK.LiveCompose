@@ -6,8 +6,9 @@
 
 using System.Threading.RateLimiting;
 using ASK.LiveCompose.Configuration;
-using ASK.LiveCompose.Middlewares;
 using ASK.LiveCompose.Services;
+using ASK.LiveCompose.Utils;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +30,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSingleton<IDockerComposeService, DockerComposeService>();
 builder.Services.AddTransient<AuthMiddleware>();
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = context =>
+    {
+        context.ProblemDetails.Instance = $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}";
+        context.ProblemDetails.Extensions.TryAdd("requestId", context.HttpContext.TraceIdentifier);
+        context.ProblemDetails.Extensions.TryAdd("traceId", context.HttpContext.Features.Get<IHttpActivityFeature>()?.Activity?.Id);
+    };
+});
+builder.Services.AddExceptionHandler<DefaultExceptionHandler>();
 
 var options = new LiveComposeConfig();
 builder.Configuration.GetSection("LiveCompose").Bind(options);
@@ -58,6 +69,8 @@ if (options.EnableRateLimit)
 }
 
 app.UseForwardedHeaders();
+
+app.UseExceptionHandler();
 
 app.UseMiddleware<AuthMiddleware>();
 
