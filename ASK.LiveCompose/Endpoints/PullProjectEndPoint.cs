@@ -11,22 +11,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ASK.LiveCompose.Endpoints;
 
-[Obsolete("Use pull then up requests instead.")]
 [Route("/projects")]
-public class UpdateProjectsEndPoint(ILogger<UpdateProjectsEndPoint> logger, IDockerComposeService dockerComposeService) : EndpointBaseAsync.WithRequest<BaseProjectInput>.WithoutResult
+public class PullProjectsEndPoint(IDockerComposeService dockerComposeService) : EndpointBaseAsync.WithRequest<BaseProjectInput>.WithoutResult
 {
-    [HttpPost("{projectName}/update")]
+    [HttpPost("{projectName}/pull")]
+    [HttpPost("{projectName}/services/{service}/pull")]
     public override async Task HandleAsync(BaseProjectInput request, CancellationToken cancellationToken = new CancellationToken())
     {
-        logger.LogWarning("Calling deprecated update endpoint");
-
         var g = HttpContext.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
-
-        var environmentVariables = HttpContext.Request.Query
-                                              .Where(q => q.Key.StartsWith("ENV_"))
-                                              .ToDictionary(
-                                                  p => p.Key[4..],
-                                                  p => p.Value.ToString());
 
         HttpContext.Response.StatusCode = 200;
         HttpContext.Response.ContentType = "text/plain; charset=utf-8";
@@ -40,15 +32,6 @@ public class UpdateProjectsEndPoint(ILogger<UpdateProjectsEndPoint> logger, IDoc
                 if(x.Contains("Downloading") || x.Contains("Extracting"))
                     return;
 
-                HttpContext.Response.WriteAsync(x + '\n', cancellationToken).Wait(cancellationToken);
-                HttpContext.Response.Body.FlushAsync(cancellationToken).Wait(cancellationToken);
-            }, cancellationToken);
-        await dockerComposeService.UpProjectAsync(
-            request.ProjectName,
-            request.ServiceName,
-            environmentVariables,
-            x =>
-            {
                 HttpContext.Response.WriteAsync(x + '\n', cancellationToken).Wait(cancellationToken);
                 HttpContext.Response.Body.FlushAsync(cancellationToken).Wait(cancellationToken);
             }, cancellationToken);

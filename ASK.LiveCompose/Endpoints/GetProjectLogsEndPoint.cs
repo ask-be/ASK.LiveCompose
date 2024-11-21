@@ -12,14 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ASK.LiveCompose.Endpoints;
 
-public class GetProjectLogsEndPointInput : IValidatableObject
+public class GetProjectLogsEndPointInput : BaseProjectInput
 {
-    [FromRoute(Name = "projectName")]
-    public required string ProjectName { get; set; }
-
-    [FromRoute(Name = "serviceName")]
-    public string? ServiceName { get; set; }
-
     [FromQuery(Name = "t")]
     public bool IncludeTimStamp { get; set; } = false;
 
@@ -29,12 +23,11 @@ public class GetProjectLogsEndPointInput : IValidatableObject
     [FromQuery(Name = "since")]
     public string? Since { get; set; }
 
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if(!ProjectName.IsValidateServiceOrProjectName())
-            yield return new ValidationResult("Invalid Project Id");
-        if(ServiceName is not null && !ServiceName.IsValidateServiceOrProjectName())
-            yield return new ValidationResult("Service name is invalid");
+        foreach(var err in base.Validate(validationContext))
+            yield return err;
+
         if(Tail is not null && !Tail.Equals("ALL", StringComparison.CurrentCultureIgnoreCase) && !int.TryParse(Tail, out _))
             yield return new ValidationResult("Tail is invalid, must be a number or 'All'");
         if(Since is not null && !Since.IsValidSinceValue())
@@ -46,7 +39,7 @@ public class GetProjectLogsEndPointInput : IValidatableObject
 public class GetProjectLogsEndPoint(IDockerComposeService dockerComposeService) : EndpointBaseAsync.WithRequest<GetProjectLogsEndPointInput>.WithoutResult
 {
     [HttpGet("{projectName}/logs")]
-    [HttpGet("{projectName}/services/{serviceName}/logs")]
+    [HttpGet("{projectName}/services/{service}/logs")]
     public override async Task HandleAsync(GetProjectLogsEndPointInput request, CancellationToken cancellationToken = new CancellationToken())
     {
         var g = HttpContext.Features.GetRequiredFeature<IHttpResponseBodyFeature>();

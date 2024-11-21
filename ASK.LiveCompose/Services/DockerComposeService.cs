@@ -81,16 +81,23 @@ public class DockerComposeService : IDockerComposeService
         }
     }
 
-    public async Task UpdateProjectAsync(string projectName,
-        string? service,
-        IReadOnlyDictionary<string,string> environmentVariables,
-        Action<string> writeLogLine,
-        CancellationToken cancellationToken)
+    public async Task PullProjectAsync(string projectName, string? service, Action<string> writeLogLine, CancellationToken cancellationToken)
+    {
+        var projectPath = GetProjectPath(projectName);
+        await DockerComposePullAsync(projectPath, service, writeLogLine, cancellationToken);
+    }
+
+    public async Task UpProjectAsync(string projectName, string? service, IReadOnlyDictionary<string, string> environmentVariables, Action<string> writeLogLine, CancellationToken cancellationToken)
     {
         var projectPath = GetProjectPath(projectName);
         await UpdateEnvironmentVariables(projectPath, environmentVariables);
-        await DockerComposePullAsync(projectPath, service, writeLogLine, cancellationToken);
         await DockerComposeUpAsync(projectPath, service, writeLogLine, cancellationToken);
+    }
+
+    public async Task DownProjectAsync(string projectName, string? service, Action<string> writeLogLine, CancellationToken cancellationToken)
+    {
+        var projectPath = GetProjectPath(projectName);
+        await DockerComposeDownAsync(projectPath, service, writeLogLine, cancellationToken);
     }
 
     public async Task GetProjectServiceLogs(
@@ -190,6 +197,15 @@ public class DockerComposeService : IDockerComposeService
         await ExecuteDockerComposeCommandAsync(projectPath, DockerApplicationName, $"compose up {service} -d", writeLogLine, cancellationToken);
     }
 
+    private async Task DockerComposeDownAsync(
+        string projectPath,
+        string? service,
+        Action<string> writeLogLine,
+        CancellationToken cancellationToken)
+    {
+        await ExecuteDockerComposeCommandAsync(projectPath, DockerApplicationName, $"compose down {service}", writeLogLine, cancellationToken);
+    }
+
     private async Task<string> DockerComposePsAsync(string projectPath)
     {
         var result = new StringBuilder();
@@ -225,8 +241,12 @@ public class DockerComposeService : IDockerComposeService
 
             try
             {
-                _logger.LogDebug("Command Output : {Line}",e.Data);
+                _logger.LogDebug("Command Output : {Line}", e.Data);
                 outputLogLine(e.Data);
+            }
+            catch (OperationCanceledException)
+            {
+                // This Exception may arise when the http connexion is interrupted
             }
             catch(Exception ex)
             {

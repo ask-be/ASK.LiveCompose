@@ -10,10 +10,22 @@ namespace ASK.LiveCompose.Services;
 
 public interface IDockerComposeService
 {
-    Task UpdateProjectAsync(
+    Task PullProjectAsync(
+        string projectName,
+        string? service,
+        Action<string> writeLogLine,
+        CancellationToken cancellationToken);
+
+    Task UpProjectAsync(
         string projectName,
         string? service,
         IReadOnlyDictionary<string,string> environmentVariables,
+        Action<string> writeLogLine,
+        CancellationToken cancellationToken);
+
+    Task DownProjectAsync(
+        string projectName,
+        string? service,
         Action<string> writeLogLine,
         CancellationToken cancellationToken);
 

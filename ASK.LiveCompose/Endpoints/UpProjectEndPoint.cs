@@ -11,15 +11,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ASK.LiveCompose.Endpoints;
 
-[Obsolete("Use pull then up requests instead.")]
 [Route("/projects")]
-public class UpdateProjectsEndPoint(ILogger<UpdateProjectsEndPoint> logger, IDockerComposeService dockerComposeService) : EndpointBaseAsync.WithRequest<BaseProjectInput>.WithoutResult
+public class UpProjectsEndPoint(IDockerComposeService dockerComposeService) : EndpointBaseAsync.WithRequest<BaseProjectInput>.WithoutResult
 {
-    [HttpPost("{projectName}/update")]
+    [HttpPost("{projectName}/up")]
     public override async Task HandleAsync(BaseProjectInput request, CancellationToken cancellationToken = new CancellationToken())
     {
-        logger.LogWarning("Calling deprecated update endpoint");
-
         var g = HttpContext.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
 
         var environmentVariables = HttpContext.Request.Query
@@ -32,17 +29,6 @@ public class UpdateProjectsEndPoint(ILogger<UpdateProjectsEndPoint> logger, IDoc
         HttpContext.Response.ContentType = "text/plain; charset=utf-8";
 
         await g.StartAsync(cancellationToken);
-        await dockerComposeService.PullProjectAsync(
-            request.ProjectName,
-            request.ServiceName,
-            x =>
-            {
-                if(x.Contains("Downloading") || x.Contains("Extracting"))
-                    return;
-
-                HttpContext.Response.WriteAsync(x + '\n', cancellationToken).Wait(cancellationToken);
-                HttpContext.Response.Body.FlushAsync(cancellationToken).Wait(cancellationToken);
-            }, cancellationToken);
         await dockerComposeService.UpProjectAsync(
             request.ProjectName,
             request.ServiceName,
