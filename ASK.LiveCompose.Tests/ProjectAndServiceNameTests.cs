@@ -11,21 +11,17 @@ public class ProjectAndServiceNameTests
     [InlineData("aaa234-b3bb")]
     [InlineData("MixedCase")]
     [InlineData("EndsWithNumber3")]
-    public void ProjectAndServiceNameValidTest(string name)
+    [InlineData("projectwith.dot")]
+    public void ProjectNameValidTest(string name)
     {
-        name.IsValidateServiceOrProjectName().Should().BeTrue();
+        name.IsValidProjectName().Should().BeTrue();
     }
 
     [Theory]
     [InlineData("")]
     [InlineData("with spaces")]
-    [InlineData("1startWithNumber")]
-    [InlineData("-startWithDash")]
-    [InlineData("_startWithUnderscore")]
-    [InlineData("endWithDash-")]
-    [InlineData("endWithUnderscore_")]
-    public void ProjectAndServiceNameInvalidTest(string name)
+    public void ProjectNameInvalidTest(string name)
     {
-        name.IsValidateServiceOrProjectName().Should().BeFalse();
+        name.IsValidProjectName().Should().BeFalse();
     }
 }

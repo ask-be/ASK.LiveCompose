@@ -13,9 +13,9 @@ public class BaseProjectInput : IValidatableObject
 
     public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if(!ProjectName.IsValidateServiceOrProjectName())
+        if(!ProjectName.IsValidProjectName())
             yield return new ValidationResult("Invalid Project Id");
-        if(ServiceName is not null && !ServiceName.IsValidateServiceOrProjectName())
+        if(ServiceName is not null && !ServiceName.IsValidServiceName())
             yield return new ValidationResult("Service name is invalid");
     }
 }

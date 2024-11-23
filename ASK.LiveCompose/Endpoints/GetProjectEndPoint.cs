@@ -18,7 +18,7 @@ public class GetProjectsEndPointInput : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if(!ProjectName.IsValidateServiceOrProjectName())
+        if(!ProjectName.IsValidProjectName())
             yield return new ValidationResult("Invalid Project Id");
     }
 }

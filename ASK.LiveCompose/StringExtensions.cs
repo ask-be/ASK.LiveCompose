@@ -11,9 +11,13 @@ namespace ASK.LiveCompose;
 
 public static partial class StringExtensions
 {
-    public static bool IsValidateServiceOrProjectName(this string serviceName)
+    public static bool IsValidServiceName(this string serviceName)
     {
-        return ValidateServiceOrProjectName().IsMatch(serviceName);
+        return ValidateServiceName().IsMatch(serviceName);
+    }
+    public static bool IsValidProjectName(this string serviceName)
+    {
+        return ValidateProjectName().IsMatch(serviceName);
     }
 
     public static bool IsValidSinceValue(this string since)
@@ -24,6 +28,8 @@ public static partial class StringExtensions
     [GeneratedRegex(@"\d+\w")]
     private static partial Regex RelativeTime();
 
-    [GeneratedRegex(@"^[a-zA-Z]([-_a-zA-Z0-9]*[a-zA-Z0-9])?$")]
-    private static partial Regex ValidateServiceOrProjectName();
+    [GeneratedRegex("^[a-zA-Z0-9][a-zA-Z0-9_.-]+$")]
+    private static partial Regex ValidateServiceName();
+    [GeneratedRegex("^[a-zA-Z0-9_.-]+$")]
+    private static partial Regex ValidateProjectName();
 }
