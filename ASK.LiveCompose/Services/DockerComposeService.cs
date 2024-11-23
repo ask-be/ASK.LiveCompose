@@ -81,9 +81,10 @@ public class DockerComposeService : IDockerComposeService
         }
     }
 
-    public async Task PullProjectAsync(string projectName, string? service, Action<string> writeLogLine, CancellationToken cancellationToken)
+    public async Task PullProjectAsync(string projectName, string? service, IReadOnlyDictionary<string, string> environmentVariables, Action<string> writeLogLine, CancellationToken cancellationToken)
     {
         var projectPath = GetProjectPath(projectName);
+        await UpdateEnvironmentVariables(projectPath, environmentVariables);
         await DockerComposePullAsync(projectPath, service, writeLogLine, cancellationToken);
     }
 

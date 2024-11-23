@@ -13,6 +13,7 @@ public interface IDockerComposeService
     Task PullProjectAsync(
         string projectName,
         string? service,
+        IReadOnlyDictionary<string,string> environmentVariables,
         Action<string> writeLogLine,
         CancellationToken cancellationToken);
 

@@ -14,6 +14,7 @@ namespace ASK.LiveCompose.Endpoints;
 [Route("/projects")]
 public class UpProjectsEndPoint(IDockerComposeService dockerComposeService) : EndpointBaseAsync.WithRequest<BaseProjectInput>.WithoutResult
 {
+    [HttpPost("{projectName}/update")] // For compatibility purpose
     [HttpPost("{projectName}/up")]
     public override async Task HandleAsync(BaseProjectInput request, CancellationToken cancellationToken = new CancellationToken())
     {
@@ -35,6 +36,9 @@ public class UpProjectsEndPoint(IDockerComposeService dockerComposeService) : En
             environmentVariables,
             x =>
             {
+                if(x.Contains("Downloading") || x.Contains("Extracting"))
+                    return;
+
                 HttpContext.Response.WriteAsync(x + '\n', cancellationToken).Wait(cancellationToken);
                 HttpContext.Response.Body.FlushAsync(cancellationToken).Wait(cancellationToken);
             }, cancellationToken);

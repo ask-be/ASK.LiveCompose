@@ -18,6 +18,12 @@ public class PullProjectsEndPoint(IDockerComposeService dockerComposeService) : 
     [HttpPost("{projectName}/services/{service}/pull")]
     public override async Task HandleAsync(BaseProjectInput request, CancellationToken cancellationToken = new CancellationToken())
     {
+        var environmentVariables = HttpContext.Request.Query
+                                              .Where(q => q.Key.StartsWith("ENV_"))
+                                              .ToDictionary(
+                                                  p => p.Key[4..],
+                                                  p => p.Value.ToString());
+
         var g = HttpContext.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
 
         HttpContext.Response.StatusCode = 200;
@@ -27,6 +33,7 @@ public class PullProjectsEndPoint(IDockerComposeService dockerComposeService) : 
         await dockerComposeService.PullProjectAsync(
             request.ProjectName,
             request.ServiceName,
+            environmentVariables,
             x =>
             {
                 if(x.Contains("Downloading") || x.Contains("Extracting"))
