@@ -172,6 +172,9 @@ curl -X POST \
      "https://yourdomain.com/projects/bookstack/services/app/pull"
 ```
 
+> [!NOTE]
+> Environment variable can be updated on pull request (see 1 for syntax)
+
 4. **Pull a complete project**:
 
 ```bash
@@ -179,6 +182,8 @@ curl -X POST \
      -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
      "https://yourdomain.com/projects/bookstack/pull"
 ```
+> [!NOTE]
+> Environment variable can be updated on pull request (see 1 for syntax)
 
 5. **View Logs for a Specific Service**:
 
@@ -199,6 +204,33 @@ curl --max-time 10 \
 
 ```bash
 curl -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345 "https://yourdomain.com/projects/bookstack"
+```
+
+## Usage with Gitlab-ci
+Sample job to deploy in staging environment
+
+Two variables are defined at CI level
+- TEST_DEPLOYMENT_KEY: The auth token for the project
+- TEST_DEPLOYMENT_SERVER : The url to the deployed ask.livecompose service
+
+```yaml
+deploy-test:
+  stage: deploy
+  image: curlimages/curl:latest
+  rules: # only run if a tag is created
+    - if: $CI_COMMIT_TAG
+  when: manual # Deployment is manual (remove this line to make it automatic)
+  environment: # see https://docs.gitlab.com/ee/ci/environments/ for more information about environments
+    name: test
+    url: https://staging.example.com
+  script:
+    # Pull new version and update VERSION environment variable in the .env file
+    - curl -X POST -H X-Auth-Token:${TEST_DEPLOYMENT_KEY} "${TEST_DEPLOYMENT_SERVER}/projects/project_name/pull?ENV_VERSION=${CI_COMMIT_TAG}"
+    # Restart the containers
+    - curl -X POST -H X-Auth-Token:${TEST_DEPLOYMENT_KEY} "${TEST_DEPLOYMENT_SERVER}/projects/project_nameuel/up"
+    # Display 10 seconds of logs of service app to ensure application startup is fine 
+    # Remarks : the "|| true" at the end ensure the jobs ends successfully even if the connection time out after 10 seconds
+    - curl --max-time 10 -H X-Auth-Token:${TEST_DEPLOYMENT_KEY} "${TEST_DEPLOYMENT_SERVER}/projects/project_name/services/app/logs?since=5s" || true
 ```
 
 ## Contributing
