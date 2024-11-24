@@ -45,15 +45,21 @@ If there is a need to generate new Auth-Tokens, simply update the ```ASK_LiveCom
 
 To update all services or a specific service, use the following endpoints:
 
-- **Update all services**:
+- **Update all services of a project**:
     ```
-    POST https://yourdomain.com/projects/{project_name}/update
+    POST https://yourdomain.com/projects/{project_name}/up
     ```
 
-- **Update a specific service**:
+- **Update a specific service of a project**:
     ```
-    POST https://yourdomain.com/projects/{project_name}/services/{service_name}/update
+    POST https://yourdomain.com/projects/{project_name}/services/{service_name}/up
     ```
+
+> [!NOTE]
+> It's also possible to update the environment variables in the ```.env``` file.
+> Simply pass the variable name to update prefixed with "ENV_" in the query string parameters.
+> Example : POST https://yourdomain.com/projects/{project_name}/up?ENV_VAR1=value1&ENV_VAR2=value2
+
 
 ### Get Service Logs
 
@@ -151,10 +157,8 @@ Here’s how you can use `curl` to update your services, retrieve logs, and chec
 ```bash
 curl -X POST \
      -H X-Auth-Token:701b0bbeb927cbeb41435c1b5dc39d57\
-     "https://yourdomain.com/projects/reverse_proxy/up?ENV_VAR1=value1&ENV_VAR2=value2"
+     "https://yourdomain.com/projects/reverse_proxy/up?ENV_VAR1=value1&ENV_VERSION=2.4.0"
 ```
-> [!NOTE]
-> Environment variable must be prefixed by "ENV_" in the query string parameters.
 
 2. **Docker compose down** a project:
 
@@ -172,9 +176,6 @@ curl -X POST \
      "https://yourdomain.com/projects/bookstack/services/app/pull"
 ```
 
-> [!NOTE]
-> Environment variable can be updated on pull request (see 1 for syntax)
-
 4. **Pull a complete project**:
 
 ```bash
@@ -182,8 +183,6 @@ curl -X POST \
      -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
      "https://yourdomain.com/projects/bookstack/pull"
 ```
-> [!NOTE]
-> Environment variable can be updated on pull request (see 1 for syntax)
 
 5. **View Logs for a Specific Service**:
 
