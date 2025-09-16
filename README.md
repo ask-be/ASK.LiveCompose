@@ -226,7 +226,7 @@ deploy-test:
     # Pull new version and update VERSION environment variable in the .env file
     - curl -X POST -H X-Auth-Token:${TEST_DEPLOYMENT_KEY} "${TEST_DEPLOYMENT_SERVER}/projects/project_name/pull?ENV_VERSION=${CI_COMMIT_TAG}"
     # Restart the containers
-    - curl -X POST -H X-Auth-Token:${TEST_DEPLOYMENT_KEY} "${TEST_DEPLOYMENT_SERVER}/projects/project_nameuel/up"
+    - curl -X POST -H X-Auth-Token:${TEST_DEPLOYMENT_KEY} "${TEST_DEPLOYMENT_SERVER}/projects/project_name/up"
     # Display 10 seconds of logs of service app to ensure application startup is fine 
     # Remarks : the "|| true" at the end ensure the jobs ends successfully even if the connection time out after 10 seconds
     - curl --max-time 10 -H X-Auth-Token:${TEST_DEPLOYMENT_KEY} "${TEST_DEPLOYMENT_SERVER}/projects/project_name/services/app/logs?since=5s" || true
