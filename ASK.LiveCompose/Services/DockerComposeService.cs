@@ -7,6 +7,7 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using ASK.LiveCompose.Configuration;
 using Microsoft.Extensions.Options;
 
@@ -17,41 +18,11 @@ public class DockerComposeService : IDockerComposeService
     private const string DockerApplicationName = "docker";
     private readonly ILogger<DockerComposeService> _logger;
     private readonly LiveComposeConfig _config;
-    private readonly Dictionary<string, string> _projects = new();
+    private readonly Dictionary<string, string> _projectDirectories = new();
+    private readonly Dictionary<string, string> _projectKeys = new();
 
-    public void PrintProjectTokens()
-    {
-        if (_projects.Count == 0)
-        {
-            Console.WriteLine("No projects found");
-            return;
-        }
-        
-        var maxLength = _projects.Max(x => x.Key.Length) + 1;
-        var format = $"| {{0,-{maxLength}}}| {{1, -33}}|";
-        var line = $"|{new string('-', maxLength + 1)}|{new string('-', 34)}|";
-        Console.WriteLine();
-        Console.WriteLine(line);
-        Console.WriteLine(format, "Project Name", "Project Auth Token");
-        Console.WriteLine(line);
-        foreach (var project in _projects)
-        {
-            Console.WriteLine(format, project.Key, project.Value);
-        }
-        Console.WriteLine(line);
-        Console.WriteLine();
-    }
-
-    public string? GetProjectToken(string projectName)
-    {
-        if (_projects.TryGetValue(projectName, out var token))
-        {
-            return token;
-        }
-        _logger.LogWarning("Project {ProjectName} not found", projectName);
-        return null;
-    }
-
+    private record ComposeProject(string Name, string ConfigFiles);
+    
     public DockerComposeService(ILogger<DockerComposeService> logger, IOptions<LiveComposeConfig> config)
     {
         _logger = logger;
@@ -63,28 +34,58 @@ public class DockerComposeService : IDockerComposeService
             _config.Key = "1234567890abcdefgh";
         }
 
-        if (string.IsNullOrEmpty(_config.BasePath))
-        {
-            _logger.LogInformation("Using default Base path : /projects");
-            _config.BasePath = "/projects";
-        }
+        _logger.LogInformation("Loading projects...");
+        var result = ExecuteDockerComposeCommandSync("/", DockerApplicationName, " compose ls --format json");
 
-        _logger.LogInformation("Loading projects from {Directory}",config.Value.BasePath);
-
-        if (!Directory.Exists(config.Value.BasePath))
+        foreach (var project in JsonSerializer.Deserialize<ComposeProject[]>(result)!)
         {
-            _logger.LogError("Directory {Directory} does not exist", config.Value.BasePath);
-        }
-        else
-        {
-            foreach (var projectName in Directory
-                                        .GetDirectories(_config.BasePath)
-                                        .Select(x => Path.GetFileName(x) ?? throw new UnreachableException())
-                                        .OrderBy(x => x))
+            if (config.Value.ProjectsEnabled.Length > 0 && !config.Value.ProjectsEnabled.Contains(project.Name))
             {
-                _projects.Add(projectName, ComputeProjectKey(projectName));
+                _logger.LogInformation("Project {ProjectName} is not enabled", project.Name);
+                continue;
             }
+            if(config.Value.ProjectsDisabled.Length > 0 && config.Value.ProjectsDisabled.Contains(project.Name))
+            {
+                _logger.LogInformation("Project {ProjectName} is disabled", project.Name);
+                continue;
+            }
+            
+            _projectDirectories.Add(project.Name, Path.GetDirectoryName(project.ConfigFiles)!);
+            _projectKeys.Add(project.Name, ComputeProjectKey(project.Name));
         }
+    }
+    
+    public void PrintProjectTokens()
+    {
+        if (_projectKeys.Count == 0)
+        {
+            Console.WriteLine("No projects found");
+            return;
+        }
+        
+        var maxLength = _projectKeys.Max(x => x.Key.Length) + 1;
+        var format = $"| {{0,-{maxLength}}}| {{1, -33}}|";
+        var line = $"|{new string('-', maxLength + 1)}|{new string('-', 34)}|";
+        Console.WriteLine();
+        Console.WriteLine(line);
+        Console.WriteLine(format, "Project Name", "Project Auth Token");
+        Console.WriteLine(line);
+        foreach (var project in _projectKeys)
+        {
+            Console.WriteLine(format, project.Key, project.Value);
+        }
+        Console.WriteLine(line);
+        Console.WriteLine();
+    }
+
+    public string? GetProjectToken(string projectName)
+    {
+        if (_projectKeys.TryGetValue(projectName, out var token))
+        {
+            return token;
+        }
+        _logger.LogWarning("Project {ProjectName} not found", projectName);
+        return null;
     }
 
     public async Task PullProjectAsync(string projectName, string? service, IReadOnlyDictionary<string, string> environmentVariables, Action<string> writeLogLine, CancellationToken cancellationToken)
@@ -282,6 +283,13 @@ public class DockerComposeService : IDockerComposeService
         _logger.LogInformation("Docker Command Terminated");
     }
 
+    private string ExecuteDockerComposeCommandSync(string projectPath, string command, string arguments)
+    {
+        var result = new StringBuilder();
+        ExecuteDockerComposeCommandAsync(projectPath, command, arguments, x => result.AppendLine(x)).Wait();
+        return result.ToString();
+    }
+
     private string ComputeProjectKey(string projectName)
     {
         return new Guid(MD5.HashData(Encoding.UTF8.GetBytes(_config.Key + ":" + projectName))).ToString("N");
@@ -289,11 +297,8 @@ public class DockerComposeService : IDockerComposeService
 
     private string GetProjectPath(string projectName)
     {
-        if (!_projects.TryGetValue(projectName, out _))
-        {
-            throw new ApplicationException($"Project {projectName} not found");
-        }
-
-        return Path.Combine(_config.BasePath!, projectName);
+        return _projectDirectories.TryGetValue(projectName, out var dir) 
+            ? dir 
+            : throw new ApplicationException($"Project {projectName} not found");
     }
 }
