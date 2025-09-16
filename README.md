@@ -13,7 +13,7 @@ LiveCompose is a lightweight API that allows you to update your Docker Compose s
 
 ## Features
 
-- Update all or specific services in a Docker Compose file via API calls.
+- Execute compose ```ps```/```pull```/```up```/```down```/```logs``` on whole project or specific services in a Docker Compose file via API calls.
 - Modify environment variables in the `.env` file using query strings.
 - Access real-time service logs.
 - Unique project ID generation for easy management.
@@ -39,59 +39,9 @@ At startup each project is assigned an Auth-Token built using the ```ASK_LiveCom
 The Auth-Token of the project must be sent as using the ```X-Auth-token``` HTTP Header.
 If there is a need to generate new Auth-Tokens, simply update the ```ASK_LiveCompose__Key``` environment variable and restart the application.
 
-## API Endpoints
-
-### Update Services
-
-To update all services or a specific service, use the following endpoints:
-
-- **Update all services of a project**:
-    ```
-    POST https://yourdomain.com/projects/{project_name}/up
-    ```
-
-- **Update a specific service of a project**:
-    ```
-    POST https://yourdomain.com/projects/{project_name}/services/{service_name}/up
-    ```
-
-> [!NOTE]
-> It's also possible to update the environment variables in the ```.env``` file.
-> Simply pass the variable name to update prefixed with "ENV_" in the query string parameters.
-> Example : POST https://yourdomain.com/projects/{project_name}/up?ENV_VAR1=value1&ENV_VAR2=value2
-
-
-### Get Service Logs
-
-To retrieve logs for a specific service, use:
-
-```
-GET https://yourdomain.com/projects/{project_name}/services/{service_name}/logs
-```
-
-To retrieve all service logs, use:
-
-```
-GET https://yourdomain.com/projects/{project_name}/logs
-```
-
-The following query string parameters can be specified while requesting logs
-
-- ```t=true``` : Boolean value, Add timestamp before each line (default false)
-- ```n=xxx```: Number of lines to show from the end of the logs for each container or "All" for everything (default All)
-- ```since=xxx```: Show logs since timestamp (e.g. 2013-01-02T13:23:37Z) or relative (e.g. 42m for 42 minutes)
-
-### Get Docker Compose Status
-
-To get the output of `docker-compose ps` for a project, simply use:
-
-```
-GET https://yourdomain.com/projects/{project_name}/
-```
-
 ## Deployment
 
-You can deploy LiveCompose using the Docker image `askbe/livecompose`. Here’s how to run it using a Docker command:
+You can deploy LiveCompose using the Docker image `askbe/livecompose`.
 
 ### Important Reverse Proxy Configuration
 
@@ -105,12 +55,10 @@ Run the following command to start the LiveCompose service:
 docker run -d \
   --name livecompose \
   --restart unless-stopped \
-  -e ASK_LiveCompose__BasePath=/projects \
   -e ASK_LiveCompose__Key=1234567890abcdefgh \  # Change this for production
-  -v /opt/compose-projects:/projects \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -p 9000:8080 \
-  askbe/livecompose:0.0.3
+  askbe/livecompose:latest
 ```
 
 ### Using Docker Compose (Optional)
@@ -120,13 +68,11 @@ If you prefer to use Docker Compose, here’s a sample `docker-compose.yml` file
 ```yaml
 services:
   livecompose:
-    image: askbe/livecompose:0.0.3
+    image: askbe/livecompose:latest
     restart: unless-stopped
     environment:
-      - ASK_LiveCompose__BasePath=/projects
       - ASK_LiveCompose__Key=1234567890abcdefgh  # Change this for production
     volumes:
-      - /opt/compose-projects:/projects
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - 9000:8080
@@ -140,6 +86,24 @@ docker-compose up -d
 
 This will achieve the same result as the direct Docker command.
 
+## Limit Available Projects
+
+It is possible to restrict which projects are available through the API by using the following environment variables:
+
+- **ASK_LiveCompose__ProjectsEnabled**: Comma-separated list of project names to allow. *(Default: empty = all projects are enabled)*
+- **ASK_LiveCompose__ProjectsDisabled**: Comma-separated list of project names to exclude. *(Default: empty = no projects are disabled)*
+
+> ⚠️ If both `ProjectsEnabled` and `ProjectsDisabled` are empty or not set, **all projects will be available**.  
+> ✅ If both are specified, `ProjectsDisabled` takes precedence by removing any matching projects from the enabled list.
+
+### Example
+
+```bash
+ASK_LiveCompose__ProjectsEnabled=baseline,bookstack,cloudbeaver
+ASK_LiveCompose__ProjectsDisabled=bookstack
+```
+In this case, only ```baseline``` and ```cloudbeaver``` projects will be available through the API.
+
 ## Rate Limiting
 
 Rate limiting is enabled on the api by default and can be customized using the following environment variables (default limit is 5req/sec):
@@ -152,15 +116,25 @@ Rate limiting is enabled on the api by default and can be customized using the f
 
 Here’s how you can use `curl` to update your services, retrieve logs, and check status.
 
-1. **Docker compose up** a project while updating environment variables:
+### 1. **Docker compose up** a project while updating environment variables:
 
 ```bash
 curl -X POST \
      -H X-Auth-Token:701b0bbeb927cbeb41435c1b5dc39d57\
      "https://yourdomain.com/projects/reverse_proxy/up?ENV_VAR1=value1&ENV_VERSION=2.4.0"
 ```
+> [!NOTE]
+> It's also possible to update the environment variables in the ```.env``` file.
+> Simply pass the variable name to update prefixed with "ENV_" in the query string parameters.
+> 
+> Example:
+> ```bash
+> curl -X POST \
+> -H X-Auth-Token:701b0bbeb927cbeb41435c1b5dc39d57\
+> "https://yourdomain.com/projects/reverse_proxy/up?ENV_VAR1=value1&ENV_VERSION=2.4.0"
+> ```
 
-2. **Docker compose down** a project:
+### 2. **Docker compose down** a project:
 
 ```bash
 curl -X POST \
@@ -168,7 +142,7 @@ curl -X POST \
      "https://yourdomain.com/projects/reverse_proxy/down"
 ```
 
-3. **Pull a specific Service of a project**:
+### 3. **Pull a specific Service of a project**:
 
 ```bash
 curl -X POST \
@@ -176,7 +150,7 @@ curl -X POST \
      "https://yourdomain.com/projects/bookstack/services/app/pull"
 ```
 
-4. **Pull a complete project**:
+### 4. **Pull a complete project**:
 
 ```bash
 curl -X POST \
@@ -184,22 +158,28 @@ curl -X POST \
      "https://yourdomain.com/projects/bookstack/pull"
 ```
 
-5. **View Logs for a Specific Service**:
+### 5. **View Logs for a Specific Service**:
 
 ```bash
 curl -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
      "https://yourdomain.com/projects/bookstack/services/app/logs"
 ```
 
-6. **View Logs for project since 15 seconds and stop after 10 seconds**:
+> [!NOTE]
+>The following query string parameters can be specified while requesting logs
+>
+> - ```t=true``` : Boolean value, Add timestamp before each line (default false)
+> - ```n=xxx```: Number of lines to show from the end of the logs for each container or "All" for everything (default All)
+> - ```since=xxx```: Show logs since timestamp (e.g. 2013-01-02T13:23:37Z) or relative (e.g. 42m for 42 minutes)
+>
+> Example:
+>```bash
+>curl --max-time 10 \
+>     -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
+>     "https://yourdomain.com/projects/bookstack/logs?since=15s"
+>```
 
-```bash
-curl --max-time 10 \
-     -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
-     "https://yourdomain.com/projects/bookstack/logs?since=15s"
-```
-
-7. **Check Docker Compose Status**:
+### 6. **Check Docker Compose Status**:
 
 ```bash
 curl -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345 "https://yourdomain.com/projects/bookstack"
