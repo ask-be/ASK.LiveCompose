@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-using System.ComponentModel.DataAnnotations;
 using Ardalis.ApiEndpoints;
 using ASK.LiveCompose.Services;
 using Microsoft.AspNetCore.Mvc;
