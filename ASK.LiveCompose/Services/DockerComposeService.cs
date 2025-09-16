@@ -21,6 +21,12 @@ public class DockerComposeService : IDockerComposeService
 
     public void PrintProjectTokens()
     {
+        if (_projects.Count == 0)
+        {
+            Console.WriteLine("No projects found");
+            return;
+        }
+        
         var maxLength = _projects.Max(x => x.Key.Length) + 1;
         var format = $"| {{0,-{maxLength}}}| {{1, -33}}|";
         var line = $"|{new string('-', maxLength + 1)}|{new string('-', 34)}|";
