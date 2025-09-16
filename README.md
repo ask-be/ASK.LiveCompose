@@ -116,13 +116,23 @@ Rate limiting is enabled on the api by default and can be customized using the f
 
 Here’s how you can use `curl` to update your services, retrieve logs, and check status.
 
-### 1. **Docker compose up** a project while updating environment variables:
+### 1. **Docker compose up** a project:
+
+#### A complete project
 
 ```bash
 curl -X POST \
      -H X-Auth-Token:701b0bbeb927cbeb41435c1b5dc39d57\
-     "https://yourdomain.com/projects/reverse_proxy/up?ENV_VAR1=value1&ENV_VERSION=2.4.0"
+     "https://yourdomain.com/projects/reverse_proxy/up"
 ```
+
+#### A single service
+```bash
+curl -X POST \
+     -H X-Auth-Token:701b0bbeb927cbeb41435c1b5dc39d57\
+     "https://yourdomain.com/projects/reverse_proxy/services/service_a/up"
+```
+
 > [!NOTE]
 > It's also possible to update the environment variables in the ```.env``` file.
 > Simply pass the variable name to update prefixed with "ENV_" in the query string parameters.
@@ -136,21 +146,24 @@ curl -X POST \
 
 ### 2. **Docker compose down** a project:
 
+#### A complete project
+
 ```bash
 curl -X POST \
      -H X-Auth-Token:701b0bbeb927cbeb41435c1b5dc39d57\
      "https://yourdomain.com/projects/reverse_proxy/down"
 ```
 
-### 3. **Pull a specific Service of a project**:
-
+#### A single service
 ```bash
 curl -X POST \
-     -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
-     "https://yourdomain.com/projects/bookstack/services/app/pull"
+     -H X-Auth-Token:701b0bbeb927cbeb41435c1b5dc39d57\
+     "https://yourdomain.com/projects/reverse_proxy/services/service_a/down"
 ```
 
-### 4. **Pull a complete project**:
+### 3. **docker compose pull a project**:
+
+#### A complete project
 
 ```bash
 curl -X POST \
@@ -158,7 +171,23 @@ curl -X POST \
      "https://yourdomain.com/projects/bookstack/pull"
 ```
 
-### 5. **View Logs for a Specific Service**:
+#### A single service
+
+```bash
+curl -X POST \
+     -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
+     "https://yourdomain.com/projects/bookstack/services/app/pull"
+```
+
+### 4. **docker compose logs**:
+
+#### A complete project
+```bash
+curl -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
+     "https://yourdomain.com/projects/bookstack/logs"
+```
+
+#### A single service
 
 ```bash
 curl -H X-Auth-Token:234b034b927cbeb41435c1b5dc39345\
