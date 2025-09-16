@@ -11,25 +11,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ASK.LiveCompose.Endpoints;
 
-public class GetProjectsEndPointInput : IValidatableObject
-{
-    [FromRoute(Name = "projectName")]
-    public required string ProjectName { get; set; }
-
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        if(!ProjectName.IsValidProjectName())
-            yield return new ValidationResult("Invalid Project Id");
-    }
-}
-
 [Route("/projects")]
-public class GetProjectEndPoint(IDockerComposeService dockerComposeService) : EndpointBaseAsync.WithRequest<GetProjectsEndPointInput>.WithActionResult
+public class GetProjectEndPoint(IDockerComposeService dockerComposeService) : EndpointBaseAsync.WithRequest<BaseProjectInput>.WithActionResult
 {
     [HttpGet("{projectName}")]
-    public override async Task<ActionResult> HandleAsync(GetProjectsEndPointInput request, CancellationToken cancellationToken = new CancellationToken())
+    [HttpGet("{projectName}/services/{service}")]
+    public override async Task<ActionResult> HandleAsync(BaseProjectInput request, CancellationToken cancellationToken = new())
     {
-        var result = await dockerComposeService.GetProjectAsync(request.ProjectName, cancellationToken);
+        var result = await dockerComposeService.GetProjectDefinitionAsync(request.ProjectName, request.ServiceName, cancellationToken);
         return Ok(result);
     }
 }

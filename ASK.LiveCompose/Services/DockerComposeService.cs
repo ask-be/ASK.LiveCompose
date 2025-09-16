@@ -143,7 +143,22 @@ public class DockerComposeService : IDockerComposeService
         await ExecuteDockerComposeCommandAsync(projectPath, DockerApplicationName, parameters.ToString(), writeLogLine, cancellationToken);
     }
 
-    public async Task<string> GetProjectAsync(string projectName, CancellationToken cancellationToken)
+    public async Task<string> GetProjectDefinitionAsync(string projectName, string? serviceName,
+        CancellationToken cancellationToken)
+    {
+        var projectPath = GetProjectPath(projectName);
+        return serviceName is null 
+            ? await DockerComposeConfigAsync(projectPath,"--no-interpolate")
+            : await DockerComposeConfigAsync(projectPath, $"--no-interpolate {serviceName}");
+    }
+    
+    public async Task<string> GetProjectServicesAsync(string projectName, CancellationToken cancellationToken)
+    {
+        var projectPath = GetProjectPath(projectName);
+        return await DockerComposeConfigAsync(projectPath, "--services");
+    }
+    
+    public async Task<string> GetProjectStatusAsync(string projectName, CancellationToken cancellationToken)
     {
         var projectPath = GetProjectPath(projectName);
         return await DockerComposePsAsync(projectPath);
@@ -218,6 +233,13 @@ public class DockerComposeService : IDockerComposeService
     {
         var result = new StringBuilder();
         await ExecuteDockerComposeCommandAsync(projectPath, DockerApplicationName, "compose ps --format table", x => result.AppendLine(x));
+        return result.ToString();
+    }
+    
+    private async Task<string> DockerComposeConfigAsync(string projectPath, string subCommand)
+    {
+        var result = new StringBuilder();
+        await ExecuteDockerComposeCommandAsync(projectPath, DockerApplicationName, $"compose config {subCommand}", x => result.AppendLine(x));
         return result.ToString();
     }
 

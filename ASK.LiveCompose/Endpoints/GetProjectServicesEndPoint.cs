@@ -1,0 +1,35 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Vincent DARON <vincent@ask.be>
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+using System.ComponentModel.DataAnnotations;
+using Ardalis.ApiEndpoints;
+using ASK.LiveCompose.Services;
+using Microsoft.AspNetCore.Mvc;
+
+namespace ASK.LiveCompose.Endpoints;
+
+public class GetProjectServicesEndPointInput : IValidatableObject
+{
+    [FromRoute(Name = "projectName")]
+    public required string ProjectName { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if(!ProjectName.IsValidProjectName())
+            yield return new ValidationResult("Invalid Project Id");
+    }
+}
+
+[Route("/projects")]
+public class GetProjectServicesEndPoint(IDockerComposeService dockerComposeService) : EndpointBaseAsync.WithRequest<GetProjectServicesEndPointInput>.WithActionResult
+{
+    [HttpGet("{projectName}/services")]
+    public override async Task<ActionResult> HandleAsync(GetProjectServicesEndPointInput request, CancellationToken cancellationToken = new ())
+    {
+        var result = await dockerComposeService.GetProjectServicesAsync(request.ProjectName, cancellationToken);
+        return Ok(result);
+    }
+}

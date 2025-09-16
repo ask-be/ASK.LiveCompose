@@ -39,7 +39,9 @@ public interface IDockerComposeService
         Action<string> writeLogLine,
         CancellationToken cancellationToken);
 
-    Task<string> GetProjectAsync(string projectName, CancellationToken cancellationToken);
+    Task<string> GetProjectDefinitionAsync(string projectName, string? serviceName, CancellationToken cancellationToken);
+    Task<string> GetProjectServicesAsync(string projectName, CancellationToken cancellationToken);
+    Task<string> GetProjectStatusAsync(string projectName, CancellationToken cancellationToken);
 
     void PrintProjectTokens();
 
