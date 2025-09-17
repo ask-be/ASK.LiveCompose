@@ -9,14 +9,18 @@ namespace ASK.LiveCompose.Configuration;
 public class LiveComposeConfig
 {
     /// <summary>
-    /// If array contains at least one element, only project present enabled will be available
+    /// If comma separated list of the only projects that will be available 
     /// </summary>
-    public string[] ProjectsEnabled { get; set; } = [];
+    public string? ProjectsEnabled { get; set; }
+    
+    internal string[] ProjectsEnabledArray => ProjectsEnabled?.Split(',', StringSplitOptions.TrimEntries) ?? [];
     
     /// <summary>
-    /// If array contains at least one element, all projects present will not be available
+    /// If comma separated list of projects that will not be available
     /// </summary>
-    public string[] ProjectsDisabled { get; set; } = [];
+    public string? ProjectsDisabled { get; set; }
+    
+    internal string[] ProjectsDisabledArray => ProjectsDisabled?.Split(',', StringSplitOptions.TrimEntries) ?? [];
     
     /// <summary>
     /// Base key to compote secret auth token

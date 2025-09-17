@@ -39,12 +39,12 @@ public class DockerComposeService : IDockerComposeService
 
         foreach (var project in JsonSerializer.Deserialize<ComposeProject[]>(result)!)
         {
-            if (config.Value.ProjectsEnabled.Length > 0 && !config.Value.ProjectsEnabled.Contains(project.Name))
+            if (config.Value.ProjectsEnabledArray.Length > 0 && !config.Value.ProjectsEnabledArray.Contains(project.Name))
             {
                 _logger.LogInformation("Project {ProjectName} is not enabled", project.Name);
                 continue;
             }
-            if(config.Value.ProjectsDisabled.Length > 0 && config.Value.ProjectsDisabled.Contains(project.Name))
+            if(config.Value.ProjectsDisabledArray.Length > 0 && config.Value.ProjectsDisabledArray.Contains(project.Name))
             {
                 _logger.LogInformation("Project {ProjectName} is disabled", project.Name);
                 continue;
